@@ -6,9 +6,9 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false,
-		"ignore": ["pnpm-lock.yaml"]
-	},
+  "ignoreUnknown": false,
+  "ignore": ["pnpm-lock.yaml", "src/types/worker-configuration.d.ts"]
+},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "space"

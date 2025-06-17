@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "cf-typegen": "wrangler types ./src/types/worker-configuration.d.ts --env-interface CloudflareBindings",
     "lint": "npx @biomejs/biome check --write src",
     "webhook:setup:dev": "node --env-file-if-exists=.dev.vars ./scripts/webhook.js dev",
     "webhook:setup:prod": "node --env-file-if-exists=.dev.vars ./scripts/webhook.js prod"
