@@ -39,3 +39,7 @@ By proving some text containing a recipe, the bot will send a `.txt` file contai
 ### `/link <url>`
 
 By proving a link containing a recipe, the bot will send a `.txt` file containing the recipe formatted in a nice way.
+
+### `/mela <url>`
+
+By proving a link containing a recipe, the bot will send a `.json` file containing the recipe that follows the [melarecipe model](https://mela.recipes/fileformat/index.html).
