@@ -1,5 +1,5 @@
 import { parseWhitelist, whitelistMiddleware } from "@/helpers/auth"
-import { callWorkerAI } from "@/helpers/prompts"
+import { callWorkerAI, callWorkerAIJson } from "@/helpers/prompts"
 import axios from "axios"
 import { Bot, InputFile, webhookCallback } from "grammy"
 import { Hono } from "hono"
@@ -53,6 +53,33 @@ app.post("/webhook", async (c) => {
       const file = new InputFile(
         new Blob([aiResponse], { type: "text/plain" }),
         "recipe.txt"
+      )
+      await ctx.api.deleteMessage(ctx.chat.id, loadingMessage.message_id)
+      await ctx.replyWithDocument(file)
+    } catch (error) {
+      console.error(error)
+      return await ctx.reply(
+        "Error processing your request. Please try again later."
+      )
+    }
+  })
+
+  bot.command("mela", async (ctx) => {
+    const loadingMessage = await ctx.reply("Caricando...")
+
+    if (!ctx.match) {
+      return ctx.reply("Please provide a link")
+    }
+
+    try {
+      const response = await axios.get<string>(ctx.match.trim())
+      const aiResponse = await callWorkerAIJson(c, response.data)
+      console.log("AI response:", aiResponse)
+      const file = new InputFile(
+        new Blob([JSON.stringify(aiResponse, null, 2)], {
+          type: "application/json"
+        }),
+        "recipe.json"
       )
       await ctx.api.deleteMessage(ctx.chat.id, loadingMessage.message_id)
       await ctx.replyWithDocument(file)
