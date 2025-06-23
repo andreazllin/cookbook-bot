@@ -53,6 +53,85 @@ export const callWorkerAI = async (
   return result
 }
 
+export const callWorkerAIJson = async (
+  c: HonoContext,
+  prompt: string
+): Promise<object> => {
+  const response = await c.env.AI.run(
+    "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+    {
+      messages: [
+        ...promptContext,
+        { role: "user", content: recipePrompt(prompt) }
+      ],
+      max_tokens: 10000,
+      temperature: 0.5,
+      response_format: {
+        title: "JSON Mode",
+        type: "json_schema",
+        json_schema: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            title: { type: "string" },
+            text: { type: "string" },
+            images: { type: "array", items: { type: "string" } },
+            categories: { type: "array", items: { type: "string" } },
+            yield: { type: "string" },
+            prepTime: { type: "string" },
+            cookTime: { type: "string" },
+            totalTime: { type: "string" },
+            ingredients: { type: "string" },
+            instructions: { type: "string" },
+            notes: { type: "string" },
+            nutrition: { type: "string" },
+            link: { type: "string" },
+            favorite: { type: "boolean" },
+            wantToCook: { type: "boolean" },
+            date: { type: "string" },
+          },
+          required: [
+            "title",
+            "ingredients",
+            "instructions",
+            "yield",
+            "id",
+            "favorite",
+            "wantToCook",
+            "notes",
+            "categories",
+            "date",
+            "link",
+            "images"
+          ]
+        },
+      }
+    }
+  );
+
+  if (typeof response === "object" && response !== null) {
+    if (typeof response.response === "object" && response.response !== null) {
+      return response.response;
+    }
+    if (typeof response.response === "string") {
+      try {
+        return JSON.parse(response.response) as object;
+      } catch {
+        return { response: response.response };
+      }
+    }
+    return response;
+  }
+  if (typeof response === "string") {
+    try {
+      return JSON.parse(response) as object;
+    } catch {
+      return { response };
+    }
+  }
+  return {};
+}
+
 const promptContext = [
   {
     role: "system",
