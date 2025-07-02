@@ -41,11 +41,11 @@ app.post("/webhook", async (c) => {
   })
 
   bot.command("link", async (ctx) => {
-    const loadingMessage = await ctx.reply("Caricando...")
-
     if (!ctx.match) {
       return ctx.reply("Please provide a link")
     }
+
+    const loadingMessage = await ctx.reply("Caricando...")
 
     try {
       const response = await axios.get<string>(ctx.match.trim())
@@ -65,16 +65,15 @@ app.post("/webhook", async (c) => {
   })
 
   bot.command("mela", async (ctx) => {
-    const loadingMessage = await ctx.reply("Caricando...")
-
     if (!ctx.match) {
       return ctx.reply("Please provide a link")
     }
 
+    const loadingMessage = await ctx.reply("Caricando...")
+
     try {
       const response = await axios.get<string>(ctx.match.trim())
       const aiResponse = await callWorkerAIJson(c, response.data)
-      console.log("AI response:", aiResponse)
       const file = new InputFile(
         new Blob([JSON.stringify(aiResponse, null, 2)], {
           type: "application/json"
