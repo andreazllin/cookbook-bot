@@ -3,6 +3,8 @@ import { callWorkerAI, callWorkerAIJson } from "@/helpers/prompts"
 import axios from "axios"
 import { Bot, InputFile, webhookCallback } from "grammy"
 import { Hono } from "hono"
+import { parse } from "node-html-parser"
+import { ignoredTags } from "./constants/prompts"
 
 const app = new Hono<{ Bindings: Cloudflare.Env }>()
 
@@ -49,7 +51,19 @@ app.post("/webhook", async (c) => {
 
     try {
       const response = await axios.get<string>(ctx.match.trim())
-      const aiResponse = await callWorkerAI(c, response.data)
+      const root = parse(response.data)
+      const bodyNode = root.querySelector("body")
+      bodyNode?.children.forEach((node) => {
+        // Remove ignored tags
+        if (ignoredTags.includes(node.rawTagName)) {
+          node.remove()
+        }
+      })
+      const bodyText = bodyNode?.children.map((ch) => ch.textContent.trim()).filter(Boolean).join("")
+      if (!bodyText) {
+        return await ctx.reply("No valid content found in the provided link.")
+      }
+      const aiResponse = await callWorkerAI(c, bodyText)
       const file = new InputFile(
         new Blob([aiResponse], { type: "text/plain" }),
         "recipe.txt"
@@ -73,7 +87,22 @@ app.post("/webhook", async (c) => {
 
     try {
       const response = await axios.get<string>(ctx.match.trim())
-      const aiResponse = await callWorkerAIJson(c, response.data)
+      const root = parse(response.data)
+      const bodyNode = root.querySelector("body")
+      bodyNode?.children.forEach((node) => {
+        if (ignoredTags.includes(node.rawTagName)) {
+          node.remove()
+        }
+      })
+      const bodyText = bodyNode?.children.map((ch) => ch.textContent.trim()).filter(Boolean).join("")
+      if (!bodyText) {
+        return await ctx.reply("No valid content found in the provided link.")
+      }
+      const images = bodyNode
+        ? bodyNode.querySelectorAll("img").map((img) => img.getAttribute("src")).filter(Boolean)
+        : []
+      const prompt = `${bodyText}\n\nImages:\n${images.join("\n")}`;
+      const aiResponse = await callWorkerAIJson(c, prompt)
       const file = new InputFile(
         new Blob([JSON.stringify(aiResponse, null, 2)], {
           type: "application/json"

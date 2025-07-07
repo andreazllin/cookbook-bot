@@ -67,3 +67,9 @@ ${recipe}
 
 [FINE RICETTA]
 `
+
+export const ignoredTags = [
+  "script",
+  "style",
+  "noscript",
+  "av-adv-slot",]
