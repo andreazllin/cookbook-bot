@@ -63,7 +63,11 @@ app.post("/webhook", async (c) => {
       if (!bodyText) {
         return await ctx.reply("No valid content found in the provided link.")
       }
-      const aiResponse = await callWorkerAI(c, bodyText)
+      const formattedBodyText = bodyText
+        .split('\n').map(line => line.trim()).join('\n')
+        .replace(/\n{2,}/g, '\n')
+        .replace(/ {2,}/g, ' ');
+      const aiResponse = await callWorkerAI(c, formattedBodyText)
       const file = new InputFile(
         new Blob([aiResponse], { type: "text/plain" }),
         "recipe.txt"
@@ -101,7 +105,11 @@ app.post("/webhook", async (c) => {
       const images = bodyNode
         ? bodyNode.querySelectorAll("img").map((img) => img.getAttribute("src")).filter(Boolean)
         : []
-      const prompt = `${bodyText}\n\nImages:\n${images.join("\n")}`;
+      const formattedBodyText = bodyText
+        .split('\n').map(line => line.trim()).join('\n')
+        .replace(/\n{2,}/g, '\n')
+        .replace(/ {2,}/g, ' ');
+      const prompt = `${formattedBodyText}\n\nImages:\n${images.join("\n")}`;
       const aiResponse = await callWorkerAIJson(c, prompt)
       const file = new InputFile(
         new Blob([JSON.stringify(aiResponse, null, 2)], {
